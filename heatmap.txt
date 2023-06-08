@@ -1,0 +1,47 @@
+import pandas as pd
+import ast
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import pandas as pd
+
+# let's assume df is your DataFrame and it has a column 'POLYLINE'
+df = df_tr.copy()
+
+df = df[:1000]
+# Assuming df is your DataFrame and it has a column 'POLYLINE'
+
+# Create a list to hold the flattened data
+flattened_data_list = []
+
+# Flatten the lists in 'POLYLINE' into separate 'longitude' and 'latitude' values
+for i in df.index:
+    polyline_str = df.loc[i, 'POLYLINE']
+    try:
+        polyline = ast.literal_eval(polyline_str)
+        if isinstance(polyline, list) and all(isinstance(point, list) and len(point) == 2 for point in polyline):
+            for coord in polyline:
+                flattened_data_list.append({'longitude': coord[0], 'latitude': coord[1]})
+        else:
+            print(f'Unexpected POLYLINE data at index {i}: {polyline}')
+    except ValueError:
+        print(f'Error parsing POLYLINE data at index {i}: {polyline_str}')
+
+# Convert the list to a DataFrame
+flattened_data = pd.DataFrame(flattened_data_list)
+
+# use seaborn's kdeplot
+plt.figure(figsize=(10,10))
+sns.kdeplot(
+    data=flattened_data,
+    x='longitude',
+    y='latitude',
+    cmap="Reds", # choose color map
+    shade=True,  # shade will fill in the contours
+    bw_adjust=0.5  # this parameter will affect the smoothness of the plot
+)
+plt.title('Heatmap of Trip Positions')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.show()
